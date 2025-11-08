@@ -16,16 +16,19 @@ import java.util.List;
 @TeleOp(name = "MecTest AutoAlign", group = "TeleOp")
 public class MecTest extends LinearOpMode {
 
-    // ← typo fixed here
     private static final int TARGET_TAG_ID = 24;
 
-    // vision stuff
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
 
-    // simple P turn constants
-    private static final double kP_TURN = 0.03;
-    private static final double MAX_TURN_POWER = 0.4;
+    // tuning
+    private static final double kP_TURN = 0.03;     // proportional gain
+    private static final double MAX_TURN_POWER = 0.5;
+    private static final double MIN_TURN_POWER = 0.13; // <- floor so robot actually moves
+    private static final double YAW_DEADZONE = 1.5;    // degrees
+
+    // remember last turn direction so we can coast if we lose the tag
+    private double lastTurnPower = 0.0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -40,8 +43,7 @@ public class MecTest extends LinearOpMode {
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // start vision (make sure your webcam name matches RC config)
-        initVision();
+        initVision("Webcam 1");
 
         telemetry.addLine("Ready");
         telemetry.update();
@@ -50,25 +52,15 @@ public class MecTest extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            // normal driving inputs
+            // driver inputs
             double y = -gamepad1.left_stick_y;
             double x = gamepad1.left_stick_x * 1.1;
             double rx = gamepad1.right_stick_x;
 
-            // when you hold RB, try to auto-face tag
-            if (gamepad1.right_bumper) {
-                Double autoTurn = getAutoTurnPowerForTargetTag();
-                if (autoTurn != null) {
-                    rx = autoTurn;
-                } else {
-                    // no tag seen; you could leave manual rx or 0
-                    rx = 0;
-                }
-            }
 
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = (y + x + rx) / denominator;
-            double backLeftPower  = (y - x + rx) / denominator;
+            double frontLeftPower  = (y + x + rx) / denominator;
+            double backLeftPower   = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower  = (y + x - rx) / denominator;
 
@@ -77,56 +69,21 @@ public class MecTest extends LinearOpMode {
             frontRightMotor.setPower(frontRightPower);
             backRightMotor.setPower(backRightPower);
 
-            // intake on right trigger (yours was negative, I’ll keep it simple)
             intake.setPower(-gamepad1.right_trigger);
-
-            telemetry.addData("Align", gamepad1.right_bumper ? "ON" : "OFF");
-            telemetry.update();
         }
     }
 
-    // ---------------- helper methods go BELOW runOpMode ----------------
-
-    private void initVision() {
-        aprilTag = new AprilTagProcessor.Builder().build();
+    private void initVision(String webcamName) {
+        aprilTag = new AprilTagProcessor.Builder()
+                .setDrawTagID(true)
+                .setDrawAxes(true)
+                .setDrawCubeProjection(true)
+                .build();
 
         visionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1")) // change name if needed
+                .setCamera(hardwareMap.get(WebcamName.class, webcamName))
                 .addProcessor(aprilTag)
+                .enableLiveView(true)
                 .build();
-    }
-
-    /**
-     * If target tag is seen, returns turn power. Else returns null.
-     */
-    private Double getAutoTurnPowerForTargetTag() {
-        List<AprilTagDetection> detections = aprilTag.getDetections();
-        if (detections == null || detections.isEmpty()) {
-            return null;
-        }
-
-        AprilTagDetection target = null;
-        for (AprilTagDetection d : detections) {
-            if (d.id == TARGET_TAG_ID) {
-                target = d;
-                break;
-            }
-        }
-        if (target == null) return null;
-
-        // ftcPose.yaw is in degrees
-        double yawDeg = target.ftcPose.yaw;
-        telemetry.addData("Tag", target.id);
-        telemetry.addData("Yaw", yawDeg);
-
-        double turn = yawDeg * kP_TURN;
-        turn = Range.clip(turn, -MAX_TURN_POWER, MAX_TURN_POWER);
-
-        // deadzone so it stops wiggling
-        if (Math.abs(yawDeg) < 1.5) {
-            turn = 0;
-        }
-
-        return turn;
     }
 }
