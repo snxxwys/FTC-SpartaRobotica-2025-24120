@@ -135,7 +135,7 @@ public class MainOpMode extends LinearOpMode {
 
             moveRobot(drive, strafe, turn);
 
-            if(gamepad1.right_bumper){
+            if(gamepad1.y){
                 intake.setPower(gamepad1.right_trigger);
             }else{
                 intake.setPower(-gamepad1.right_trigger);
