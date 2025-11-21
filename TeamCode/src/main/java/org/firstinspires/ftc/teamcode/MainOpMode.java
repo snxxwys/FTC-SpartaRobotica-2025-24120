@@ -135,8 +135,11 @@ public class MainOpMode extends LinearOpMode {
 
             moveRobot(drive, strafe, turn);
 
-            // Intake (right trigger)
-            intake.setPower(-gamepad1.right_trigger);
+            if(gamepad1.right_bumper){
+                intake.setPower(gamepad1.right_trigger);
+            }else{
+                intake.setPower(-gamepad1.right_trigger);
+            }
 
             // Launcher (left trigger)
             if (gamepad1.left_trigger > 0.1) {
