@@ -48,7 +48,7 @@ public class SimpleAuto extends LinearOpMode {
             backLeftMotor.setPower(power);
             backRightMotor.setPower(power);
 
-            sleep(1000); // 1000 ms = 1 second
+            sleep(1500); // 1000 ms = 1 second
 
             // Stop
             frontLeftMotor.setPower(0);
