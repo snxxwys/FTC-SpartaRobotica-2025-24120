@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 @Autonomous(name = "Advanced Auto BLUE", group = "Autonomous")
@@ -16,6 +17,7 @@ public class AdvancedAutoBlue extends LinearOpMode {
 
     private DcMotor launcher;
     private DcMotor intake;
+    private DcMotor feeder;
 
     @Override
     public void runOpMode() {
@@ -25,6 +27,9 @@ public class AdvancedAutoBlue extends LinearOpMode {
         frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
         backLeftMotor   = hardwareMap.get(DcMotor.class, "backLeftMotor");
         backRightMotor  = hardwareMap.get(DcMotor.class, "backRightMotor");
+
+        feeder = hardwareMap.get(DcMotor.class, "feeder");
+        feeder.setDirection(DcMotorSimple.Direction.FORWARD);
 
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -76,6 +81,7 @@ public class AdvancedAutoBlue extends LinearOpMode {
             }*/
 
             double power = 0.5;
+            hardwareMap.get(Servo.class, "myServo").setPosition(.3);
 
             frontLeftMotor.setPower(-power);
             frontRightMotor.setPower(-power);
@@ -107,14 +113,30 @@ public class AdvancedAutoBlue extends LinearOpMode {
 
             launcher.setPower(compensatedPower);
 
+            sleep(2000);
+
+            intake.setPower(1);
+            feeder.setPower(1);
+
+            sleep(3000);
+
+            hardwareMap.get(Servo.class, "myServo").setPosition(0);
+
+            sleep(500);
+
+            intake.setPower(-1);
+            feeder.setPower(1);
+
             sleep(1000);
 
             intake.setPower(1);
+            feeder.setPower(1);
 
-            sleep(5000);
+            sleep(3000);
 
             intake.setPower(0);
             launcher.setPower(0);
+            feeder.setPower(0);
 
             frontLeftMotor.setPower(-power);
             frontRightMotor.setPower(-power);

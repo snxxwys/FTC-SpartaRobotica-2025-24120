@@ -29,7 +29,7 @@ public class AdvancedAutoRed extends LinearOpMode {
         backRightMotor  = hardwareMap.get(DcMotor.class, "backRightMotor");
 
         feeder = hardwareMap.get(DcMotor.class, "feeder");
-        feeder.setDirection(DcMotorSimple.Direction.REVERSE);
+        feeder.setDirection(DcMotorSimple.Direction.FORWARD);
 
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -79,7 +79,7 @@ public class AdvancedAutoRed extends LinearOpMode {
                 telemetry.update();
                 sleep(50);
             }*/
-
+            hardwareMap.get(Servo.class, "myServo").setPosition(.3);
             double power = 0.5;
 
             frontLeftMotor.setPower(-power);
@@ -126,14 +126,14 @@ public class AdvancedAutoRed extends LinearOpMode {
 
             launcher.setPower(compensatedPower);
 
-            sleep(1000);
+            sleep(2000);
 
             intake.setPower(1);
             feeder.setPower(1);
 
-            sleep(6000);
+            sleep(3000);
 
-            hardwareMap.get(Servo.class, "myServo").setPosition(.5);
+            hardwareMap.get(Servo.class, "myServo").setPosition(0);
 
             sleep(500);
 
