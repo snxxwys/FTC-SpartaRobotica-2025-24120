@@ -168,11 +168,15 @@ public class MainOpMode extends LinearOpMode {
             if(gamepad1.y){
                 if(gamepad1.right_bumper){
                     feeder.setPower(1);
+                }else if(!gamepad1.y){
+                    feeder.setPower(0);
                 }
                 intake.setPower(gamepad1.right_trigger);
             }else {
-                if (gamepad1.right_bumper) {
+                if(gamepad1.right_bumper){
                     feeder.setPower(-1);
+                }else if(!gamepad1.y){
+                    feeder.setPower(0);
                 }
                 intake.setPower(-gamepad1.right_trigger);
             }
