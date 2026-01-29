@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
+import com.pedropathing.ftc.drivetrains.MecanumConstants;
+import com.pedropathing.ftc.localization.Encoder;
+import com.pedropathing.ftc.localization.constants.DriveEncoderConstants;
 import com.pedropathing.paths.PathConstraints;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.pedropathing.localization.constants.DriveEncoderConstants;
-import com.pedropathing.localization.constants.MecanumConstants;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.pedropathing.util.Encoder;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
