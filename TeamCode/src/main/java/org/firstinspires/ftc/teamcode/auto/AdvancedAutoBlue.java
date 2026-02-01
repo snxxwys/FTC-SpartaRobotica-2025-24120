@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-@Autonomous(name = "Advanced Auto RED", group = "Autonomous")
-public class AdvancedAutoRed extends LinearOpMode {
+@Autonomous(name = "Advanced Auto BLUE", group = "Autonomous")
+public class AdvancedAutoBlue extends LinearOpMode {
 
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
@@ -79,8 +79,9 @@ public class AdvancedAutoRed extends LinearOpMode {
                 telemetry.update();
                 sleep(50);
             }*/
-            hardwareMap.get(Servo.class, "myServo").setPosition(.3);
+
             double power = 0.5;
+            hardwareMap.get(Servo.class, "myServo").setPosition(.3);
 
             frontLeftMotor.setPower(-power);
             frontRightMotor.setPower(-power);
@@ -110,20 +111,6 @@ public class AdvancedAutoRed extends LinearOpMode {
             double compensatedPower = basePower * (11.0 / voltage);
             compensatedPower = Range.clip(compensatedPower, 0.0, 1.0);
 
-            /*
-            launcher.setPower(compensatedPower);
-
-            sleep(1000);
-
-            intake.setPower(1);
-
-            sleep(5000);
-
-            intake.setPower(0);
-            launcher.setPower(0);
-            feeder.setPower(0);
-            */
-
             launcher.setPower(compensatedPower);
 
             sleep(2000);
@@ -151,8 +138,6 @@ public class AdvancedAutoRed extends LinearOpMode {
             launcher.setPower(0);
             feeder.setPower(0);
 
-
-
             frontLeftMotor.setPower(-power);
             frontRightMotor.setPower(-power);
             backLeftMotor.setPower(-power);
@@ -160,10 +145,10 @@ public class AdvancedAutoRed extends LinearOpMode {
 
             sleep(1000);
 
-            frontLeftMotor.setPower(power);
-            backLeftMotor.setPower(-power);
-            backRightMotor.setPower(power);
-            frontRightMotor.setPower(-power);
+            frontLeftMotor.setPower(-power);
+            backLeftMotor.setPower(power);
+            backRightMotor.setPower(-power);
+            frontRightMotor.setPower(power);
 
             sleep(2500);
 

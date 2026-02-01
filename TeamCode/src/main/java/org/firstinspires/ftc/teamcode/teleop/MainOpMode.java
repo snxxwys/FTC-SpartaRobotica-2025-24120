@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -17,8 +18,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@TeleOp(name = "TEST", group = "TeleOp")
-public class TEST extends LinearOpMode {
+@TeleOp(name = "Main", group = "TeleOp")
+public class MainOpMode extends LinearOpMode {
 
     private static final double DESIRED_DISTANCE = 12.0;   // inches
     private static final double SPEED_GAIN       = 0.02;
@@ -29,7 +30,7 @@ public class TEST extends LinearOpMode {
     private static final double MAX_AUTO_STRAFE  = 0.5;
     private static final double MAX_AUTO_TURN    = 0.4;
 
-    private static final boolean USE_WEBCAM      = true;
+    private static final boolean USE_WEBCAM      = false;
 
     // Tag IDs we want to toggle between
     private static final int TAG_ID_1 = 24;
@@ -41,19 +42,21 @@ public class TEST extends LinearOpMode {
     // For edge-detect on the A button (so it toggles once per press)
     private boolean aWasPressed = false;
 
-    private float wheelAdjust = 0.0f;
-    private boolean dpadPressed = false;
-
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
     private DcMotor backRightMotor;
     private DcMotor intake;
     private DcMotor launcher;
+    private DcMotor feeder;
 
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
+
+    Servo myServo;
+    boolean buttonWasPressed = false;
+    boolean servoExtended = false;
 
     @Override
     public void runOpMode() {
@@ -72,6 +75,9 @@ public class TEST extends LinearOpMode {
         backLeftMotor   = hardwareMap.get(DcMotor.class, "backLeftMotor");
         backRightMotor  = hardwareMap.get(DcMotor.class, "backRightMotor");
         intake          = hardwareMap.get(DcMotor.class, "intake");
+        feeder = hardwareMap.get(DcMotor.class, "feeder");
+
+        feeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         launcher = hardwareMap.get(DcMotor.class, "launcher");
         launcher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -81,6 +87,8 @@ public class TEST extends LinearOpMode {
         // Reverse right side for mecanum
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        myServo = hardwareMap.get(Servo.class, "myServo");
 
         if (USE_WEBCAM) {
             setManualExposure(6, 250);
@@ -103,6 +111,12 @@ public class TEST extends LinearOpMode {
                 }
             }
             aWasPressed = gamepad1.a;
+
+            if (gamepad1.b && !buttonWasPressed) {
+                servoExtended = !servoExtended;
+                myServo.setPosition(servoExtended ? .3 : 0.0);
+            }
+            buttonWasPressed = gamepad1.b;
 
             // --- AprilTag detection ---
             targetFound = false;
@@ -138,29 +152,40 @@ public class TEST extends LinearOpMode {
 
             moveRobot(drive, strafe, turn);
 
-            if(gamepad1.y){
+            /*if(gamepad1.y){
                 intake.setPower(gamepad1.right_trigger);
+                feeder.setPower(gamepad1.right_trigger);
             }else{
                 intake.setPower(-gamepad1.right_trigger);
-            }
+                feeder.setPower(-gamepad1.right_trigger);
 
-            if(gamepad1.dpad_up || gamepad1.dpad_down){
-                dpadPressed = true;
-                if (gamepad1.dpad_up){
-                    wheelAdjust += .1f;
+                if (gamepad1.x) {
+                    intake.setPower(gamepad1.right_trigger);
+                    feeder.setPower(-gamepad1.right_trigger);
                 }
-                if (gamepad1.dpad_down){
-                    wheelAdjust -= .1f;
+            }*/
+
+            if(gamepad1.y){
+                if(gamepad1.right_bumper){
+                    feeder.setPower(1);
+                }else if(!gamepad1.y){
+                    feeder.setPower(0);
                 }
-            } else {
-                dpadPressed = false;
+                intake.setPower(gamepad1.right_trigger);
+            }else {
+                if(gamepad1.right_bumper){
+                    feeder.setPower(-1);
+                }else if(!gamepad1.y){
+                    feeder.setPower(0);
+                }
+                intake.setPower(-gamepad1.right_trigger);
             }
 
             // Launcher (left trigger)
             double voltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
 
 // Base power you want at 11V (tune this if needed)
-            double basePower = 1.0;
+            double basePower = 1;
 
 // Compensated power
             double compensatedPower = basePower * (11.0 / voltage);
@@ -174,8 +199,7 @@ public class TEST extends LinearOpMode {
             }
 
 
-            // --- Telemetry
-            telemetry.addData("wheelAdjust", wheelAdjust);
+            // --- Telemetry ---
             telemetry.addData("Target Found", targetFound ? "yes" : "no");
             telemetry.addData("Target Tag ID", currentTagId);
             if (desiredTag != null) {
@@ -209,7 +233,7 @@ public class TEST extends LinearOpMode {
         }
 
         frontLeftMotor.setPower(frontLeftPower);
-        frontRightMotor.setPower(frontRightPower * wheelAdjust);
+        frontRightMotor.setPower(frontRightPower * 0.8);
         backLeftMotor.setPower(backLeftPower);
         backRightMotor.setPower(backRightPower);
     }
