@@ -58,6 +58,8 @@ public class MainOpMode extends LinearOpMode {
     boolean buttonWasPressed = false;
     boolean servoExtended = false;
 
+    Servo launcherServo;
+
     @Override
     public void runOpMode() {
 
@@ -89,6 +91,7 @@ public class MainOpMode extends LinearOpMode {
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         myServo = hardwareMap.get(Servo.class, "myServo");
+        launcherServo = hardwareMap.get(Servo.class, "launcherServo");
 
         if (USE_WEBCAM) {
             setManualExposure(6, 250);
@@ -117,6 +120,12 @@ public class MainOpMode extends LinearOpMode {
                 myServo.setPosition(servoExtended ? .3 : 0.0);
             }
             buttonWasPressed = gamepad1.b;
+
+            if (gamepad1.x) {
+                launcherServo.setPosition(1);
+            } else {
+                launcherServo.setPosition(.5);
+            }
 
             // --- AprilTag detection ---
             targetFound = false;
